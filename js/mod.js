@@ -1,12 +1,12 @@
-let modInfo = {
+﻿let modInfo = {
 	name: "The StarRail Tree",
 	id: "starrailmod",
 	author: "phi.1001301",
 	pointsName: "SR Fragments",
 	modFiles: ["layers.js", "tree.js"],
 
-	discordName: "",
-	discordLink: "",
+	discordName: "作者的B站账号",
+	discordLink: "http://space.bilibili.com/1269046117",
 	initialStartPoints: new Decimal (10), // Used for hard resets and new players
 	offlineLimit: 1,  // In hours
 }
@@ -23,7 +23,7 @@ let changelog = `<h1>Changelog:</h1><br>
 	<h3>v0.0.1</h3><br>
 		- Add 2 levels.`
 
-let winText = `Congratulations! You have reached the end and beaten this game, but for now...`
+let winText = `你现在通关了！`
 
 // If you add new functions anywhere inside of a layer, and those functions have an effect when called, add them here.
 // (The ones here are examples, all official functions are already taken care of)
@@ -48,7 +48,9 @@ function getPointGen() {
 	if (hasUpgrade('p', 13)) gain = gain.times(upgradeEffect('p', 13))
 	if (hasUpgrade('p', 15)) gain = gain.times(upgradeEffect('p', 15))
 	if (hasUpgrade('c', 11)) gain = gain.times(25)
-	if (hasUpgrade('c', 13)) gain = gain.times(upgradeEffect('c', 13))
+	if (hasUpgrade('c', 13)) gain = gain.mul(upgradeEffect('c', 13))
+	if (hasMilestone('ph',0)) gain = gain.mul(2)
+	if (hasUpgrade('Inf',11)) gain = gain.mul(3)
 	if (hasUpgrade('c', 12)) gain = gain.pow(1.6)
  if (inChallenge('c', 11)) gain = gain.pow(0.5)
 	return gain
@@ -64,7 +66,7 @@ var displayThings = [
 
 // Determines when the game "ends"
 function isEndgame() {
-	return player.points.gte(new Decimal("e280000000"))
+	return hasUpgrade('j', 161)
 }
 
 
