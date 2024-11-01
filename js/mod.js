@@ -13,14 +13,16 @@
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.0.2",
-	name: "Mid-Alpha",
+	num: "0.1.0",
+	name: "Pre-Beta",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
-	<h3>v0.0.2</h3><br>
+	<h3>v0.1.0 Pre-Beta</h3><br>
+		- Rebalanced.<br>		- Add 3 levels.<br>		- Add some milestones, upgrades and buyables.<br>
+	<h3>v0.0.2 Mid-Alpha</h3><br>
 		- Add PHM level.<br>		- Add a challenge, two milestones and some upgrades.<br>
-	<h3>v0.0.1</h3><br>
+	<h3>v0.0.1 Early Alpha</h3><br>
 		- Add 2 levels.`
 
 let winText = `你现在通关了！`
@@ -35,7 +37,8 @@ function getStartPoints(){
 
 // Determines if it should show points/sec
 function canGenPoints(){
-	return true
+  if ((!hasUpgrade('Inf',12)) && player.points.gte(new Decimal("1.7977e308"))) return false
+  return true
 }
 
 // Calculate points/sec!
@@ -50,9 +53,11 @@ function getPointGen() {
 	if (hasUpgrade('c', 11)) gain = gain.times(25)
 	if (hasUpgrade('c', 13)) gain = gain.mul(upgradeEffect('c', 13))
 	if (hasMilestone('ph',0)) gain = gain.mul(2)
-	if (hasUpgrade('Inf',11)) gain = gain.mul(3)
+	if (hasUpgrade('Inf',221)) gain = gain.mul(3)
+	if (hasUpgrade('Inf',11)) gain = gain.mul(2)
+	if (clickableEffect('j', 11).gte(1)) gain = gain.times(clickableEffect('j', 11));
 	if (hasUpgrade('c', 12)) gain = gain.pow(1.6)
- if (inChallenge('c', 11)) gain = gain.pow(0.5)
+	if (inChallenge('c', 11)) gain = gain.pow(0.5)
 	return gain
 }
 
