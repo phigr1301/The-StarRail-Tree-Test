@@ -43,7 +43,7 @@
 		<canvas id="treeCanvas" class="canvas" v-if="!(tmp.gameEnded && !player.keepGoing)"></canvas>
 
 		<div v-if="false" id="loadingSection" class="fullWidth">
-			<h1>Loading... (If this takes too long it means there was a serious error!)←</h1>
+			<h1>加载中...（如果加载时间较长，请刷新页面，或者向开发者反馈）</h1>
 		</div>
 		<div class="vl" v-if="player.navTab !== 'none' && tmp.other.splitScreen && player.tab!='none' && !(tmp.gameEnded && !player.keepGoing)"></div>
 		<div v-if="(tmp.gameEnded && !player.keepGoing)" class="fullWidth">
