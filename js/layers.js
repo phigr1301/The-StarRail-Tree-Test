@@ -20,7 +20,10 @@ addLayer("p", {
         if (hasUpgrade('c', 21)) mult = mult.times(upgradeEffect('c', 21))
         if (hasUpgrade('j', 11)) mult = mult.times(upgradeEffect('j', 11))
         if (hasUpgrade('j', 12)) mult = mult.times(35)
+        if (hasUpgrade('ch', 22)) mult = mult.times(upgradeEffect('ch', 22))
+        if (hasUpgrade('ch', 23)) mult = mult.times(upgradeEffect('ch', 23))
         if (hasUpgrade('Inf', 11)) mult = mult.times(2)
+        if (hasUpgrade('ch', 12)) mult = mult.pow(1.12)
         return mult
     },
     gainExp() { // Calculate the exponent on main currency from bonuses
@@ -47,7 +50,7 @@ addLayer("p", {
     doReset(resettingLayer) {
         if (layers[resettingLayer].row > layers[this.layer].row) {
             let kept = []
-            if(hasMilestone('j',3)&&resettingLayer == "j") kept.push("upgrades")
+            if (hasMilestone('j', 3) && (resettingLayer == "j" || (hasMilestone('ch', 1) && resettingLayer == "ch"))) kept.push("upgrades")
             if(hasMilestone('j',4)&&resettingLayer == "ph") kept.push("points")
             layerDataReset(this.layer, kept)
         }
@@ -130,7 +133,10 @@ addLayer("c", {
         if(hasMilestone('ph',2)) mult = mult.times(1.3) ;
         if (hasUpgrade('ph', 11)) mult = mult.times(upgradeEffect('ph', 11));
         if (buyableEffect('j', 11).gte(1)) mult = mult.times(buyableEffect('j', 11));
+        if (hasUpgrade('j', 14)) mult = mult.times(upgradeEffect('j', 14));
+        if (hasUpgrade('ch', 24)) mult = mult.times("1e14");
         if (hasUpgrade('Inf', 11)) mult = mult.times(2);
+        if (hasUpgrade('ch', 13)) mult = mult.pow(1.08);
         return mult
     },
     gainExp() { // Calculate the exponent on main currency from bonuses
@@ -154,8 +160,8 @@ addLayer("c", {
     doReset(resettingLayer) {
         if (layers[resettingLayer].row > layers[this.layer].row) {
             let kept = []
-            if(hasMilestone('j',3)&&resettingLayer == "j") kept.push("upgrades")
-            if(hasMilestone('j',4)&&resettingLayer == "j") kept.push("challenges")
+            if (hasMilestone('j', 3) && (resettingLayer == "j" || (hasMilestone('ch', 1) && resettingLayer == "ch"))) kept.push("upgrades")
+            if (hasMilestone('j', 4) && (resettingLayer == "j" || (hasMilestone('ch', 1) && resettingLayer == "ch"))) kept.push("challenges")
             layerDataReset(this.layer, kept)
         }
     },challenges: {
@@ -240,7 +246,7 @@ addLayer("ph", {
     baseAmount() { return player['p'].points }, // Get the current amount of baseResource
      // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
     exponent: 2, // Prestige currency exponent
-    branches() { return ['p'] },
+    branches() { return ['p','c'] },
     gainMult() { // Calculate the multiplier for main currency from bonuses
         mult = new Decimal(1)
         return mult
@@ -258,9 +264,9 @@ addLayer("ph", {
     doReset(resettingLayer) {
         if (layers[resettingLayer].row > layers[this.layer].row) {
             let kept = []
-            if(hasMilestone('j',3)&&resettingLayer == "j") kept.push("milestones")
-            if(hasMilestone('j',4)&&resettingLayer == "j") kept.push("upgrades")
-            if(hasMilestone('j',5)&&resettingLayer == "j") kept.push("points")
+            if (hasMilestone('j', 3) && (resettingLayer == "j" || (hasMilestone('ch', 1) && resettingLayer == "ch"))) kept.push("milestones")
+            if (hasMilestone('j', 4) && (resettingLayer == "j" || (hasMilestone('ch', 1) && resettingLayer == "ch"))) kept.push("upgrades")
+            if (hasMilestone('j', 5) && (resettingLayer == "j" || (hasMilestone('ch', 1) && resettingLayer == "ch"))) kept.push("points")
             layerDataReset(this.layer, kept)
         }
     },milestones: {
@@ -342,16 +348,21 @@ addLayer("j", {
      gainMult() { // Calculate the multiplier for main currency from bonuses
          mult = new Decimal(1)
          if (hasUpgrade('j', 13)) mult = mult.times(upgradeEffect('j', 13))
+         if (hasUpgrade('j', 21)) mult = mult.times(upgradeEffect('j', 21))
+         if (hasUpgrade('ch', 21)) mult = mult.times(upgradeEffect('ch', 21))
          if (hasUpgrade('Inf', 11)) mult = mult.times(2)
+         if (hasUpgrade('ch', 14)) mult = mult.pow(1.06)
          return mult
      },
      gainExp() { // Calculate the exponent on main currency from bonuses
          return new Decimal(1)
-     },
-     passiveGeneration() {
-         mult = new Decimal(0)
-         return mult
-     },
+    },
+    passiveGeneration() {
+        mult = new Decimal(0)
+        if (hasMilestone('ch', 0))
+            mult = new Decimal(0.25);
+        return mult
+    },
      row: 2, // Row the layer is in on the tree (0 is the first row)
      hotkeys: [
          { key: "j", description: "J reset L3", onPress() { if (canReset(this.layer)) doReset(this.layer) } },
@@ -400,7 +411,7 @@ addLayer("j", {
     },},buyables: {
     11: {
         title(){ return "L2 gain upgrade"},
-        cost(x) { req=new Decimal(7).mul(x.add(1)).mul(x.add(1)).sub(4); if(req.gte(50000)) req=req.mul(20).sub(950000); if(req.gte(25000000)) req=req.pow(1.5).sub(1.24975e11); return req; },
+            cost(x) { req = new Decimal(7).mul(x.add(1)).mul(x.add(1)).sub(4); if (req.gte(50000)) req = req.mul(20).sub(950000); if (req.gte(25000000)) req = req.pow(1.5).sub(1.24975e11); if (x.gte(500)) return new Decimal("(e^1e30)10"); return req; },
         display() { return "Multiply L2 gain by (1+buys)^2 \nNow:" + format(buyableEffect(this.layer, this.id)) + "x\nCost:" + format(this.cost()) + " Stellar Jades" },
         unlocked() { return hasMilestone('j', 3) },
         canAfford() { return player[this.layer].points.gte(this.cost()) },
@@ -408,30 +419,30 @@ addLayer("j", {
             player[this.layer].points = player[this.layer].points.sub(this.cost())
             setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
         },
-        effect(x){return new Decimal(1).mul(x.add(1)).mul(x.add(1))}
+            effect(x) { eff = new Decimal(1).mul(x.add(1)).mul(x.add(1)); if (x.gte(431)) eff = eff.div(185761).pow(3).mul(185761); return eff}
     },},
      clickables:{
      11: {
       title() {return "进行抽卡！"},
       display() {return "消耗160星琼，随机获得1-5.5倍的碎片获取加成。\n当前：" + format(clickableEffect(this.layer, this.id)) + "x"},
-      canClick() {return player.j.points.gte(160)},
+             canClick() { return player.j.points.gte(160) && player.j.gachaEff.lt(1e72)},
       unlocked() { return hasMilestone('j', 6) },
       effect() {return player.j.gachaEff},
-      onClick() {player.j.points=player.j.points.sub(160); player.j.gachaRand=new Decimal(Math.random()).times(450).floor().add(1).mul(0.01).add(1); player.j.gachaEff=player.j.gachaEff.add(player.j.gachaRand)},
+             onClick() { player.j.points = player.j.points.sub(160); player.j.gachaRand = new Decimal(Math.random()).times(450).floor().add(1).mul(0.01).add(1); player.j.gachaEff = player.j.gachaEff.add(player.j.gachaRand);if(player.j.gachaEff.gte("1e72")) player.j.gachaEff=new Decimal("1.00e72")},
     },
      12: {
       title() {return "十连抽！"},
       display() {return "抽卡10次！需要1600星琼"},
-      canClick() {return player.j.points.gte(1600)},
+         canClick() { return player.j.points.gte(1600) && player.j.gachaEff.lt(1e72)},
       unlocked() { return hasMilestone('j', 6) },
-      onClick() {player.j.points=player.j.points.sub(1600); player.j.gachaRand=new Decimal(Math.random()).times(4500).floor().add(1).mul(0.01).add(10); player.j.gachaEff=player.j.gachaEff.add(player.j.gachaRand)},
+         onClick() { player.j.points = player.j.points.sub(1600); player.j.gachaRand = new Decimal(Math.random()).times(4500).floor().add(1).mul(0.01).add(10); player.j.gachaEff = player.j.gachaEff.add(player.j.gachaRand); if (player.j.gachaEff.gte("1e72")) player.j.gachaEff = new Decimal("1.00e72")},
     },
      13: {
       title() {return "使用一半星琼抽卡！"},
       display() {return "使用自己拥有的一半星琼抽卡！"},
-      canClick() {return player.j.points.gte(320)},
+      canClick() {return player.j.points.gte(320)&&player.j.gachaEff.lt(1e72)},
       unlocked() { return hasMilestone('j', 6) },
-      onClick() {player.j.gachaRand=new Decimal(Math.random()).times(player.j.points.mul(0.5).mul(0.00625).add(0.000001).floor().mul(450)).floor().add(1).mul(0.01).add(player.j.points.mul(0.5).mul(0.00625).add(0.000001).floor()); player.j.gachaEff=player.j.gachaEff.add(player.j.gachaRand); player.j.points=player.j.points.sub(player.j.points.mul(0.5).mul(0.00625).add(0.000001).floor().mul(160))},
+         onClick() { player.j.gachaRand = new Decimal(Math.random()).times(player.j.points.mul(0.5).mul(0.00625).add(0.000001).floor().mul(450)).floor().add(1).mul(0.01).add(player.j.points.mul(0.5).mul(0.00625).add(0.000001).floor()); player.j.gachaEff = player.j.gachaEff.add(player.j.gachaRand); player.j.points = player.j.points.sub(player.j.points.mul(0.5).mul(0.00625).add(0.000001).floor().mul(160)); if (player.j.gachaEff.gte("1e72")) player.j.gachaEff = new Decimal("1.00e72")},
     },},
      upgrades: {
         11: {
@@ -446,6 +457,7 @@ addLayer("j", {
              description: "Multiply L1 gain by 35",
              cost: new Decimal(3),
             effect() { return new Decimal(35) },
+            unlocked() { return (hasUpgrade('j', 11)) },
             effectDisplay() { return format(upgradeEffect(this.layer, this.id)) + "x" },
          },
         13: {
@@ -453,7 +465,41 @@ addLayer("j", {
              description: "Multiply L3 gain by sqrt(Buyable 1 Effect)",
              cost: new Decimal(350),
             effect() { return buyableEffect('j', 11).pow(0.5) },
+            unlocked() { return (hasUpgrade('j', 12)) },
             effectDisplay() { return format(upgradeEffect(this.layer, this.id)) + "x" },
+         },
+         14: {
+             title: "",
+             description: "PHM upgrade 11 effect ^2.5",
+             cost: new Decimal(3333),
+             effect() { return upgradeEffect('ph', 11).pow(1.5) },
+             unlocked() { return (hasUpgrade('j', 13)) },
+             effectDisplay() { return format(upgradeEffect(this.layer, this.id)) + "x" },
+         },
+         15: {
+             title: "Unlock Next Level",
+             description: "",
+             unlocked() { return (hasUpgrade('j', 14)) },
+             cost: new Decimal(2e9),
+         },
+         21: {
+             title: "",
+             description: "L3 upgrade 13 effect ^1.35",
+             cost: new Decimal(1e11),
+             effect() { return upgradeEffect('j', 13).pow(0.35) },
+             effectDisplay() { return format(upgradeEffect(this.layer, this.id)) + "x" },
+         },
+         22: {
+             title: "",
+             description: "Extense L3.5 Softcap",
+             unlocked() { return (hasUpgrade('j', 21)) },
+             cost: new Decimal(6e13),
+         },
+         23: {
+             title: "",
+             description: "Extense L3.5 Softcap 2",
+             unlocked() { return (hasUpgrade('j', 22)) },
+             cost: new Decimal(8e38),
          },
         161: {
              title: "通关游戏",
@@ -463,6 +509,149 @@ addLayer("j", {
      },
      layerShown() { return player.j.points.gt(0) || player.j.unlocked() }
 }),
+    addLayer("ch", {
+        name: "L3.5 Characters", // This is optional, only used in a few places, If absent it just uses the layer id.
+        symbol: "Ch", // This appears on the layer's node. Default is the id with the first letter capitalized
+        position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
+        startData() {
+            return {
+                unlocked() { return (hasUpgrade('j', 15)) },
+                points: new Decimal(0),
+            }
+        },
+        type: "static",
+        color: "#12EF56",
+        requires() {
+            req = new Decimal(1e9)
+            return req
+        }, // Can be a function that takes requirement increases into account
+        resource: "Characters", // Name of prestige currency
+        baseResource: "L3 Stellarjade", // Name of resource prestige is based on
+        baseAmount() { return player['j'].points }, // Get the current amount of baseResource
+        // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
+        exponent: 1, // Prestige currency exponent
+        branches() { return ['j','c'] },
+        gainMult() { // Calculate the multiplier for main currency from bonuses
+            mult = new Decimal(1)
+            return mult
+        },
+        gainExp() { // Calculate the exponent on main currency from bonuses
+            expr = new Decimal(1)
+            if (player.ch.points.gte(2)) expr = expr.sub(0.5)
+            if (player.ch.points.gte(6)) expr = expr.sub(0.04)
+            if (player.ch.points.gte(7)) expr = expr.sub(0.32)
+            if (hasUpgrade('j', 22)) {
+                expr = new Decimal(1)
+                if (player.ch.points.gte(2)) expr = expr.sub(0.2)
+                if (player.ch.points.gte(9)) expr = expr.sub(0.3)
+                if (player.ch.points.gte(21)) expr = expr.sub(0.36)
+            }
+            if (hasUpgrade('j', 23)) {
+                expr = new Decimal(1)
+                if (player.ch.points.gte(2)) expr = expr.sub(0.2)
+                if (player.ch.points.gte(9)) expr = expr.sub(0.3)
+                if (player.ch.points.gte(100)) expr = expr.sub(0.36)
+            }
+            return expr
+        }, //canBuyMax() { return hasUpgrade('Inf', 221) },
+        doReset(resettingLayer) {
+            if (layers[resettingLayer].row > layers[this.layer].row) {
+                let kept = []
+                layerDataReset(this.layer, kept)
+            }
+        }, milestones: {
+            0: {
+                requirementDescription: "Get 1 Character",
+                effectDescription: "Gain 25% of StellarJade on reset per second",
+                done() { return player.ch.points.gte(1) }
+            },
+            1: {
+                requirementDescription: "Get 2 Characters",
+                effectDescription: "Keep \"All that keeps on L3 reset\" on L3.5 reset",
+                unlocked() { return hasMilestone('ch', 0) },
+                done() { return player.ch.points.gte(2) }
+            },
+            2: {
+                requirementDescription: "Get 3 Characters",
+                effectDescription: "Unlock Characters Upgrade",
+                unlocked() { return hasMilestone('ch', 1) },
+                done() { return player.ch.points.gte(3) }
+            },
+        },
+        row: 2, // Row the layer is in on the tree (0 is the first row)
+        hotkeys: [
+            { key: "q", description: "Q reset L3.5", onPress() { if (canReset(this.layer)) doReset(this.layer) } },
+        ],
+        upgrades: {
+            11: {
+                title: "Silver Wolf",
+                description: "Fragments on gain x1e5",
+                cost: new Decimal("6"),
+                unlocked() { return hasMilestone('ch',2) },
+            },
+            12: {
+                title: "Kafka",
+                description: "L1 points on gain ^1.12",
+                cost: new Decimal("7"),
+                unlocked() { return hasUpgrade('ch', 11) },
+            },
+            13: {
+                title: "Blade",
+                description: "L2 on gain ^1.08",
+                cost: new Decimal("53"),
+                unlocked() { return hasUpgrade('ch', 12) },
+            },
+            14: {
+                title: "Firefly",
+                description: "L3 on gain ^1.06",
+                cost: new Decimal("55"),
+                unlocked() { return hasUpgrade('ch', 13) },
+            },
+            15: {
+                title: "???",
+                description: "Fragments on gain ^1.07",
+                cost: new Decimal("67"),
+                unlocked() { return hasUpgrade('ch', 14) },
+            },
+            21: {
+                title: "March 7th",
+                description: "Multiply L3 by fragments over 1e100",
+                cost: new Decimal("9"),
+                unlocked() { return hasMilestone('ch', 2) },
+                effect() { return player.points.div("1e100").max(1).pow(0.25).min(1e18) },
+                effectDisplay() { return format(upgradeEffect(this.layer, this.id)) + "x" },
+            },
+            22: {
+                title: "Dan Heng",
+                description: "Multiply L1 by Characters",
+                cost: new Decimal("16"),
+                unlocked() { return hasUpgrade('ch', 21) },
+                effect() { return player.ch.points.add(1).pow(1.24).div(2).add(0.5) },
+                effectDisplay() { return format(upgradeEffect(this.layer, this.id)) + "x" },
+            },
+            23: {
+                title: "Himeko",
+                description: "Upgrade 22 effect ^4",
+                cost: new Decimal("21"),
+                unlocked() { return hasUpgrade('ch', 22) },
+                effect() { return upgradeEffect('ch',22).pow(3) },
+                effectDisplay() { return format(upgradeEffect(this.layer, this.id)) + "x" },
+            },
+            24: {
+                title: "Welt",
+                description: "Fragments ^1.04",
+                cost: new Decimal("50"),
+                unlocked() { return hasUpgrade('ch', 23) },
+            },
+            25: {
+                title: "Trailblazer",
+                description: "L2 x1e14",
+                cost: new Decimal("64"),
+                unlocked() { return hasUpgrade('ch', 24) },
+            },
+        },
+        layerShown() { return player.ch.points.gt(0) || player.ch.unlocked() }
+    }),
 addLayer("Placeholder0", {
      name: "Placeholder", // This is optional, only used in a few places, If absent it just uses the layer id.
      symbol: "AAA", // This appears on the layer's node. Default is the id with the first letter capitalized

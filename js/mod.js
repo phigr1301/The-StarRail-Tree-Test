@@ -13,11 +13,13 @@
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.1.0",
-	name: "Pre-Beta",
+	num: "0.1.2",
+	name: "Beta 1",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
+	<h3>v0.1.2 Beta 1</h3><br>
+		- Add a level.<br>		- Add some useful upgrades.<br>		- Now reach infinity is possible.<br>
 	<h3>v0.1.0 Pre-Beta</h3><br>
 		- Rebalanced.<br>		- Add 3 levels.<br>		- Add some milestones, upgrades and buyables.<br>
 	<h3>v0.0.2 Mid-Alpha</h3><br>
@@ -43,6 +45,7 @@ function canGenPoints(){
 
 // Calculate points/sec!
 function getPointGen() {
+	if ((!hasUpgrade('Inf', 12)) && player.points.gte(new Decimal("1.7977e308"))) player.points=new Decimal("1.7977e308")
 	if(!canGenPoints())
 		return new Decimal(0)
 
@@ -56,7 +59,10 @@ function getPointGen() {
 	if (hasUpgrade('Inf',221)) gain = gain.mul(3)
 	if (hasUpgrade('Inf',11)) gain = gain.mul(2)
 	if (clickableEffect('j', 11).gte(1)) gain = gain.times(clickableEffect('j', 11));
+	if (hasUpgrade('ch', 11)) gain = gain.mul(100000)
 	if (hasUpgrade('c', 12)) gain = gain.pow(1.6)
+	if (hasUpgrade('ch', 24)) gain = gain.pow(1.04)
+	if (hasUpgrade('ch', 15)) gain = gain.pow(1.07)
 	if (inChallenge('c', 11)) gain = gain.pow(0.5)
 	return gain
 }
